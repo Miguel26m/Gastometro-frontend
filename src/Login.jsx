@@ -6,6 +6,8 @@ function Login() {
     const [email, asignarEmail] = useState('');
     const [password, asignarPassword] = useState('');
     const [error, asignarError] = useState('');
+    const [erroresCampo, asignarErroresCampo] = useState({ email: '', password: '' });
+    const [mostrarPassword, asignarMostrarPassword] = useState(false);
 
     const navegar = useNavigate();
 
@@ -20,9 +22,42 @@ function Login() {
         }
     }, [navegar]);
 
+    // Valida el formulario y regresa true/false. Si hay errores, los guarda en erroresCampo.
+    const validarFormulario = () => {
+        const nuevosErrores = { email: '', password: '' };
+        let esValido = true;
+
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!email.trim()) {
+            nuevosErrores.email = 'Completa este campo';
+            esValido = false;
+        } else if (!regexEmail.test(email)) {
+            nuevosErrores.email = 'El correo debe tener un formato válido (ejemplo@dominio.com)';
+            esValido = false;
+        }
+
+        const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.,;:!?@#$%^&*_\-+=]).{8,}$/;
+
+        if (!password) {
+            nuevosErrores.password = 'Completa este campo';
+            esValido = false;
+        } else if (!regexPassword.test(password)) {
+            nuevosErrores.password = 'Mínimo 8 caracteres, incluyendo mayúscula, minúscula, número y un carácter especial (ej. .)';
+            esValido = false;
+        }
+
+        asignarErroresCampo(nuevosErrores);
+        return esValido;
+    };
+
     const manejarLogin = async (evento) => {
         evento.preventDefault();
         asignarError('');
+
+        if (!validarFormulario()) {
+            return;
+        }
 
         try {
             const respuesta = await api.post('/login', { email, password });
@@ -64,29 +99,67 @@ function Login() {
                         </p>
                     )}
 
-                    <form onSubmit={manejarLogin} className="flex flex-col gap-4">
+                    <form onSubmit={manejarLogin} noValidate className="flex flex-col gap-4">
 
                         <div className="flex flex-col gap-2">
                             <label className="text-white text-center font-semibold text-base">Correo electronico</label>
                             <input
                                 type="email"
                                 value={email}
-                                onChange={(e) => asignarEmail(e.target.value)}
+                                onChange={(e) => {
+                                    asignarEmail(e.target.value);
+                                    if (erroresCampo.email) {
+                                        asignarErroresCampo((prev) => ({ ...prev, email: '' }));
+                                    }
+                                }}
                                 placeholder="correo@ejemplo.com"
-                                className="p-3 border-none rounded-xl bg-[#E8F0E8] text-[#000000] text-center font-bold outline-none placeholder-[#gray]/60 focus:ring-2 focus:ring-white/50"
-                                required
+                                className="p-3 border-none rounded-xl bg-[#E8F0E8] text-[#000000] text-center font-bold outline-none placeholder-gray-500/60 focus:ring-2 focus:ring-white/50"
                             />
+                            {erroresCampo.email && (
+                                <span className="text-red-500 bg-white text-xs font-semibold rounded-md px-2 py-1 text-center -mt-1">
+                                    {erroresCampo.email}
+                                </span>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-2">
                             <label className="text-white text-center font-semibold text-base">Contraseña</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => asignarPassword(e.target.value)}
-                                className="p-3 border-none rounded-xl bg-[#E8F0E8] text-[#000000] text-center font-bold outline-none placeholder-[#000000]/60 focus:ring-2 focus:ring-white/50"
-                                required
-                            />
+                            <div className="relative">
+                                <input
+                                    type={mostrarPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => {
+                                        asignarPassword(e.target.value);
+                                        if (erroresCampo.password) {
+                                            asignarErroresCampo((prev) => ({ ...prev, password: '' }));
+                                        }
+                                    }}
+                                    className="w-full p-3 pr-11 border-none rounded-xl bg-[#E8F0E8] text-[#000000] text-center font-bold outline-none placeholder-black/60 focus:ring-2 focus:ring-white/50"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => asignarMostrarPassword((prev) => !prev)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                    aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                >
+                                    {mostrarPassword ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                            <line x1="1" y1="1" x2="23" y2="23" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                                            <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
+                            {erroresCampo.password && (
+                                <span className="text-red-500 bg-white text-xs font-semibold rounded-md px-2 py-1 text-center -mt-1">
+                                    {erroresCampo.password}
+                                </span>
+                            )}
                         </div>
 
                         <button
