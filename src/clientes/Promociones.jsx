@@ -5,7 +5,7 @@ function Promociones({ promociones }) {
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
+                        <tr className="bg-gray-100 text-[#3EA341] text-sm uppercase tracking-wider">
                             <th className="p-4 rounded-tl-lg">Plataforma</th>
                             <th className="p-4">Oferta</th>
                             <th className="p-4">Precio</th>

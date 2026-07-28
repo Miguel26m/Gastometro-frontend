@@ -18,13 +18,16 @@ function PanelAdmin() {
     const [archivoLogo, asignarArchivoLogo] = useState(null);
     const [previsualizacionLogo, asignarPrevisualizacionLogo] = useState(null);
     const [error, asignarError] = useState('');
+    const [plataformaEnEdicion, asignarPlataformaEnEdicion] = useState(null);
 
     const [mostrarModalUsuario, asignarMostrarModalUsuario] = useState(false);
+    const [usuarioEnEdicion, asignarUsuarioEnEdicion] = useState(null);
     const [nombreUsuario, asignarNombreUsuario] = useState('');
     const [correoUsuario, asignarCorreoUsuario] = useState('');
     const [passwordUsuario, asignarPasswordUsuario] = useState('');
     const [rolIdUsuario, asignarRolIdUsuario] = useState('2');
     const [errorUsuario, asignarErrorUsuario] = useState('');
+    const [telefonoUsuario, asignarTelefonoUsuario] = useState('');
 
     const navegar = useNavigate();
 
@@ -55,9 +58,16 @@ function PanelAdmin() {
     const obtenerUsuarios = async () => {
         try {
             const respuesta = await api.get('/usuarios');
-            asignarUsuarios(respuesta.data.data);
+            const dataUsuarios = respuesta.data.data ? respuesta.data.data : respuesta.data;
+
+            if (Array.isArray(dataUsuarios)) {
+                asignarUsuarios(dataUsuarios);
+            } else {
+                console.error("El formato de datos no es correcto:", respuesta.data);
+                asignarUsuarios([]);
+            }
         } catch (falla) {
-            console.error('Aún no existe la ruta de usuarios en el backend');
+            console.error('Error al contactar la ruta /usuarios del backend:', falla);
         }
     };
 
@@ -65,6 +75,26 @@ function PanelAdmin() {
         const archivo = evento.target.files[0];
         asignarArchivoLogo(archivo || null);
         asignarPrevisualizacionLogo(archivo ? URL.createObjectURL(archivo) : null);
+    };
+
+    const abrirModalNuevaPlataforma = () => {
+        asignarPlataformaEnEdicion(null);
+        asignarNombrePlataforma('');
+        asignarCategoriaPlataforma('');
+        asignarArchivoLogo(null);
+        asignarPrevisualizacionLogo(null);
+        asignarError('');
+        asignarMostrarModal(true);
+    };
+
+    const abrirModalEditarPlataforma = (plat) => {
+        asignarPlataformaEnEdicion(plat.id);
+        asignarNombrePlataforma(plat.nombre);
+        asignarCategoriaPlataforma(plat.categoria || '');
+        asignarArchivoLogo(null);
+        asignarPrevisualizacionLogo(plat.logo_url || null); 
+        asignarError('');
+        asignarMostrarModal(true);
     };
 
     const guardarPlataforma = async (evento) => {
@@ -75,22 +105,32 @@ function PanelAdmin() {
             const datosFormulario = new FormData();
             datosFormulario.append('nombre', nombrePlataforma);
             datosFormulario.append('categoria', categoriaPlataforma);
+            
             if (archivoLogo) {
                 datosFormulario.append('logo', archivoLogo);
             }
 
-            await api.post('/plataformas', datosFormulario, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            if (plataformaEnEdicion) {
+                datosFormulario.append('_method', 'PUT');
+                await api.post(`/plataformas/${plataformaEnEdicion}`, datosFormulario, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            } else {
+                await api.post('/plataformas', datosFormulario, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            }
 
             asignarNombrePlataforma('');
             asignarCategoriaPlataforma('');
             asignarArchivoLogo(null);
             asignarPrevisualizacionLogo(null);
+            asignarPlataformaEnEdicion(null);
             asignarMostrarModal(false);
             obtenerPlataformas();
         } catch (falla) {
-            asignarError('Error al guardar la plataforma');
+            console.error(falla);
+            asignarError(plataformaEnEdicion ? 'Error al actualizar la plataforma' : 'Error al guardar la plataforma');
         }
     };
 
@@ -98,6 +138,7 @@ function PanelAdmin() {
         asignarMostrarModal(false);
         asignarArchivoLogo(null);
         asignarPrevisualizacionLogo(null);
+        asignarPlataformaEnEdicion(null);
     };
 
     const eliminarPlataforma = async (id) => {
@@ -109,26 +150,54 @@ function PanelAdmin() {
         }
     };
 
+    const abrirModalNuevoUsuario = () => {
+        asignarUsuarioEnEdicion(null);
+        asignarNombreUsuario('');
+        asignarCorreoUsuario('');
+        asignarTelefonoUsuario('');
+        asignarPasswordUsuario('');
+        asignarRolIdUsuario('2');
+        asignarErrorUsuario('');
+        asignarMostrarModalUsuario(true);
+    };
+
+    const abrirModalEditarUsuario = (usuario) => {
+        asignarUsuarioEnEdicion(usuario.id);
+        asignarNombreUsuario(usuario.name);
+        asignarCorreoUsuario(usuario.email);
+        asignarTelefonoUsuario(usuario.telefono || '');
+        asignarPasswordUsuario(''); 
+        asignarRolIdUsuario(usuario.rol_id.toString());
+        asignarErrorUsuario('');
+        asignarMostrarModalUsuario(true);
+    };
+
     const guardarUsuario = async (evento) => {
         evento.preventDefault();
         asignarErrorUsuario('');
 
         try {
-            await api.post('/usuarios', {
+            const datosUsuario = {
                 name: nombreUsuario,
                 email: correoUsuario,
-                password: passwordUsuario,
-                rol_id: rolIdUsuario
-            });
+                rol_id: rolIdUsuario,
+                telefono: telefonoUsuario
+            };
 
-            asignarNombreUsuario('');
-            asignarCorreoUsuario('');
-            asignarPasswordUsuario('');
-            asignarRolIdUsuario('2');
+            if (passwordUsuario) {
+                datosUsuario.password = passwordUsuario;
+            }
+
+            if (usuarioEnEdicion) {
+                await api.put(`/usuarios/${usuarioEnEdicion}`, datosUsuario);
+            } else {
+                await api.post('/usuarios', datosUsuario);
+            }
+
             asignarMostrarModalUsuario(false);
             obtenerUsuarios();
         } catch (falla) {
-            asignarErrorUsuario('Error al guardar el usuario');
+            asignarErrorUsuario(usuarioEnEdicion ? 'Error al actualizar el usuario' : 'Error al guardar el usuario');
         }
     };
 
@@ -158,7 +227,6 @@ function PanelAdmin() {
 
     return (
         <div className="flex min-h-screen bg-gray-50 font-sans">
-
             <aside className="w-64 bg-[#43a047] text-white flex flex-col justify-between shadow-xl z-10">
                 <div>
                     <div className="p-6 flex flex-col items-center border-b border-white/20">
@@ -187,34 +255,29 @@ function PanelAdmin() {
                         </button>
                     </nav>
                 </div>
-                <div className="p-4 border-t border-white/20 flex justify-between items-center bg-black/10">
-                    <div className="flex flex-col overflow-hidden">
-                        <span className="text-sm font-semibold truncate">{miPerfil.name || 'Cargando...'}</span>
-                        <span className="text-xs text-white/80 hover:text-white text-left">Cerrar sesión</span>
-                    </div>
-                    <button onClick={cerrarSesion} className="bg-white text-[#43a047] w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors shadow-sm ml-2">
-                        <span className="font-bold text-lg leading-none">←</span>
-                    </button>
-                </div>
             </aside>
 
             <main className="flex-1 flex flex-col">
                 <header className="h-16 bg-black text-white flex items-center justify-between px-6 shadow-md z-0">
-                    <div className="flex items-center gap-4 w-2/3">
-                        <span className="font-bold text-[#4ade80] tracking-widest hidden md:block w-40">{vistaActual.toUpperCase()}</span>
-                        <div className="flex w-full max-w-md">
-                            <input type="text" placeholder="Buscar en el sistema..." className="flex-1 px-3 py-1.5 bg-white text-black rounded-l-sm outline-none text-sm" />
-                            <button className="bg-[#43a047] px-4 py-1.5 font-semibold text-sm rounded-r-sm hover:bg-[#388e3c] transition-colors">Buscar</button>
-                        </div>
+                    <div className="flex items-center gap-4">
+                        <span className="font-bold text-[#4ade80] tracking-widest uppercase">{vistaActual}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-[#4ade80]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-                        <span className="font-semibold text-[#4ade80] text-sm md:text-base hidden sm:block">Panel de Control</span>
+
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <svg className="w-5 h-5 text-[#4ade80]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+                            <span className="font-semibold text-white text-sm">{miPerfil.name || 'Admin'}</span>
+                        </div>
+                        <button
+                            onClick={cerrarSesion}
+                            className="bg-[#3EA341] hover:bg-green-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                        >
+                            Cerrar sesión
+                        </button>
                     </div>
                 </header>
 
                 <div className="p-8 md:p-12 overflow-y-auto flex-1">
-
                     {vistaActual === 'Métricas' && (
                         <Dashboard plataformas={plataformas} usuarios={usuarios} />
                     )}
@@ -222,7 +285,8 @@ function PanelAdmin() {
                     {vistaActual === 'Plataformas' && (
                         <CatalogoPlataformas
                             plataformas={plataformas}
-                            asignarMostrarModal={asignarMostrarModal}
+                            abrirModalNuevaPlataforma={abrirModalNuevaPlataforma}
+                            abrirModalEditarPlataforma={abrirModalEditarPlataforma}
                             eliminarPlataforma={eliminarPlataforma}
                         />
                     )}
@@ -231,21 +295,23 @@ function PanelAdmin() {
                         <GestionUsuarios
                             usuarios={usuarios}
                             eliminarUsuario={eliminarUsuario}
-                            asignarMostrarModalUsuario={asignarMostrarModalUsuario}
+                            abrirModalNuevoUsuario={abrirModalNuevoUsuario}
+                            abrirModalEditarUsuario={abrirModalEditarUsuario}
                         />
                     )}
 
                     {vistaActual === 'Configuracion' && (
                         <MiPerfil miPerfil={miPerfil} />
                     )}
-
                 </div>
             </main>
 
             {mostrarModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
                     <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col gap-4 animate-fade-in-up">
-                        <h2 className="text-xl font-bold text-center text-[#43a047] border-b pb-3 uppercase tracking-wide">Registrar Plataforma</h2>
+                        <h2 className="text-xl font-bold text-center text-[#43a047] border-b pb-3 uppercase tracking-wide">
+                            {plataformaEnEdicion ? 'Editar Plataforma' : 'Registrar Plataforma'}
+                        </h2>
 
                         {error && <p className="text-red-500 text-sm font-semibold text-center bg-red-50 p-2 rounded border border-red-100">{error}</p>}
 
@@ -296,7 +362,7 @@ function PanelAdmin() {
                                     Cancelar
                                 </button>
                                 <button type="submit" className="flex-1 bg-[#43a047] text-white p-2.5 rounded-xl font-bold hover:bg-[#388e3c] shadow-md transition-all">
-                                    Guardar
+                                    {plataformaEnEdicion ? 'Actualizar' : 'Guardar'}
                                 </button>
                             </div>
                         </form>
@@ -307,7 +373,9 @@ function PanelAdmin() {
             {mostrarModalUsuario && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
                     <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col gap-4 animate-fade-in-up">
-                        <h2 className="text-xl font-bold text-center text-[#43a047] border-b pb-3 uppercase tracking-wide">Registrar Usuario</h2>
+                        <h2 className="text-xl font-bold text-center text-[#43a047] border-b pb-3 uppercase tracking-wide">
+                            {usuarioEnEdicion ? 'Editar Usuario' : 'Registrar Usuario'}
+                        </h2>
 
                         {errorUsuario && <p className="text-red-500 text-sm font-semibold text-center bg-red-50 p-2 rounded border border-red-100">{errorUsuario}</p>}
 
@@ -335,15 +403,27 @@ function PanelAdmin() {
                                     className="p-2.5 border border-gray-300 rounded-lg focus:border-[#4ade80] focus:ring-1 focus:ring-[#4ade80] outline-none font-medium"
                                 />
                             </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Teléfono</label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej. 951 123 4567"
+                                    value={telefonoUsuario}
+                                    onChange={(e) => asignarTelefonoUsuario(e.target.value)}
+                                    className="p-2.5 border border-gray-300 rounded-lg focus:border-[#4ade80] focus:ring-1 focus:ring-[#4ade80] outline-none font-medium"
+                                />
+                            </div>
 
                             <div className="flex flex-col gap-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Contraseña</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase">
+                                    Contraseña {usuarioEnEdicion && <span className="text-gray-400 normal-case">(Dejar en blanco para no cambiar)</span>}
+                                </label>
                                 <input
                                     type="password"
                                     placeholder="Mínimo 8 caracteres"
                                     value={passwordUsuario}
                                     onChange={(e) => asignarPasswordUsuario(e.target.value)}
-                                    required
+                                    required={!usuarioEnEdicion}
                                     className="p-2.5 border border-gray-300 rounded-lg focus:border-[#4ade80] focus:ring-1 focus:ring-[#4ade80] outline-none font-medium"
                                 />
                             </div>
@@ -367,7 +447,7 @@ function PanelAdmin() {
                                     Cancelar
                                 </button>
                                 <button type="submit" className="flex-1 bg-[#43a047] text-white p-2.5 rounded-xl font-bold hover:bg-[#388e3c] shadow-md transition-all">
-                                    Guardar
+                                    {usuarioEnEdicion ? 'Actualizar' : 'Guardar'}
                                 </button>
                             </div>
                         </form>

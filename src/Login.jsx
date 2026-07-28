@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from './servicios/api';
 
 function Login() {
@@ -97,13 +97,17 @@ function Login() {
                         </button>
                     </form>
 
-                    <button
-                        type="button"
-                        onClick={() => navegar('/registro')}
-                        className="bg-transparent border-none text-white font-bold text-center mt-1 cursor-pointer hover:underline"
-                    >
-                        Registrarse
-                    </button>
+                    <div className="flex justify-center items-center gap-4 mt-4">
+                        <Link to="/registro" className="text-white font-bold hover:underline text-sm">
+                            Registrarse
+                        </Link>
+
+                        <span className="text-green-200">|</span>
+
+                        <Link to="/InicioPublico" className="text-white font-bold hover:underline text-sm">
+                            Ir al inicio
+                        </Link>
+                    </div>
                 </div>
 
             </div>

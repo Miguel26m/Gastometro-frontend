@@ -1,12 +1,12 @@
-function GestionUsuarios({ usuarios, eliminarUsuario, asignarMostrarModalUsuario }) {
+function GestionUsuarios({ usuarios, eliminarUsuario, abrirModalNuevoUsuario, abrirModalEditarUsuario }) {
     return (
         <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-[#43a047]">Control de usuarios</h2>
+                    <h2 className="text-2xl font-bold text-[#3EA341]">Control de usuarios</h2>
                     <p className="text-gray-500 text-sm mt-1">Administra las cuentas registradas en el sistema.</p>
                 </div>
-                <button onClick={() => asignarMostrarModalUsuario(true)} className="bg-black text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-neutral-800 transition-colors shadow-md flex items-center gap-2">
+                <button onClick={abrirModalNuevoUsuario} className="bg-black text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-neutral-800 transition-colors shadow-md flex items-center gap-2">
                     <span className="text-xl leading-none">+</span> Nuevo usuario
                 </button>
             </div>
@@ -14,11 +14,12 @@ function GestionUsuarios({ usuarios, eliminarUsuario, asignarMostrarModalUsuario
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
+                        <tr className="bg-gray-100 text-[#3EA341] text-sm uppercase tracking-wider">
                             <th className="p-4 rounded-tl-lg w-16">ID</th>
                             <th className="p-4">Nombre</th>
                             <th className="p-4">Correo</th>
-                            <th className="p-4">Rol ID</th>
+                            <th className="p-4">Teléfono</th>
+                            <th className="p-4">Rol</th>
                             <th className="p-4 text-center rounded-tr-lg">Acciones</th>
                         </tr>
                     </thead>
@@ -30,12 +31,29 @@ function GestionUsuarios({ usuarios, eliminarUsuario, asignarMostrarModalUsuario
                                 <tr key={usr.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                     <td className="p-4 font-bold text-gray-400">#{usr.id}</td>
                                     <td className="p-4 font-semibold text-gray-800">{usr.name}</td>
-                                    <td className="p-4 text-gray-600">{usr.email}</td>
-                                    <td className="p-4 text-gray-600 font-mono bg-gray-50 rounded text-center w-20">{usr.rol_id}</td>
-                                    <td className="p-4 text-center">
-                                        <button onClick={() => eliminarUsuario(usr.id)} className="bg-red-600 text-white px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm">
-                                            Banear / Eliminar
+                                    <td className="p-4 text-gray-800">{usr.email}</td>
+                                    <td className="p-4 text-gray-800">{usr.telefono || 'Sin registro'}</td>
+                                    <td className="p-4 text-gray-800 font-medium">
+                                        <span className="p-4 text-gray-800">
+                                            {usr.rol ? usr.rol.nombre : 'Sin rol'}
+                                        </span>
+                                    </td>                                    
+                                    <td className="p-4 flex justify-center gap-2">
+                                        <button
+                                            onClick={() => abrirModalEditarUsuario(usr)}
+                                            className="bg-[#3EA341] hover:bg-green-800 text-white px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+                                        >
+                                            Editar
                                         </button>
+
+                                        {usr.rol_id != 1 && (
+                                            <button
+                                                onClick={() => eliminarUsuario(usr.id)}
+                                                className="bg-red-600 hover:bg-red-800 text-white px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))

@@ -13,10 +13,10 @@ function Suscripciones({ misSuscripciones, totalGasto, asignarMostrarModal, elim
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider">
+                        <tr className="bg-gray-100 text-[#3EA341] text-sm uppercase tracking-wider">
                             <th className="p-4 rounded-tl-lg">Plataforma</th>
                             <th className="p-4">Categoría</th>
-                            <th className="p-4">Costo mensual</th>
+                            <th className="p-4">Costo</th>
                             <th className="p-4">Día de cobro</th>
                             <th className="p-4 text-center rounded-tr-lg">Acciones</th>
                         </tr>
@@ -36,11 +36,11 @@ function Suscripciones({ misSuscripciones, totalGasto, asignarMostrarModal, elim
                                         <span className="font-semibold text-gray-800">{sub.nombre}</span>
                                     </div>
                                 </td>
-                                <td className="p-4 text-gray-600">{sub.categoria || 'General'}</td>
-                                <td className="p-4 font-medium text-[#43a047]">${sub.pivot.costo_personalizado}</td>
-                                <td className="p-4 text-gray-600">Día {sub.pivot.dia_corte}</td>
+                                <td className="p-4 text-gray-900">{sub.categoria || 'General'}</td>
+                                <td className="p-4 font-medium text-gray-800">${sub.pivot.costo_personalizado}</td>
+                                <td className="p-4 text-gray-900">Día {sub.pivot.dia_corte}</td>
                                 <td className="p-4 text-center">
-                                    <button onClick={() => eliminarSuscripcion(sub.id)} className="bg-red-100 text-red-600 px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-red-200 transition-colors">Cancelar</button>
+                                    <button onClick={() => eliminarSuscripcion(sub.id)} className="bg-[#3EA341] text-white px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-green-500 transition-colors">Cancelar</button>
                                 </td>
                             </tr>
                         ))}
