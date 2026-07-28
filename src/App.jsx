@@ -4,17 +4,18 @@ import PanelCliente from './clientes/PanelCliente';
 import PanelCazaofertas from "./cazaofertas/PanelCazaofertas";
 import PanelAdmin from "./administrador/PanelAdmin";
 import Registro from './Registro';
+import InicioPublico from './InicioPublico'; 
 
 function RutaProtegida({ children, rolPermitido }) {
     const token = sessionStorage.getItem('token_acceso');
     const rolId = parseInt(sessionStorage.getItem('rol_id'));
 
     if (!token) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     if (rolPermitido && rolId !== rolPermitido) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     return children;
@@ -24,9 +25,12 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Login />} />
+                
+                <Route path="/" element={<InicioPublico />} />
+                <Route path="/login" element={<Login />} />
                 <Route path="/registro" element={<Registro />} />
 
+               
                 <Route
                     path="/cliente"
                     element={
@@ -35,7 +39,6 @@ function App() {
                         </RutaProtegida>
                     }
                 />
-
                 <Route
                     path="/cazaofertas"
                     element={
@@ -44,7 +47,6 @@ function App() {
                         </RutaProtegida>
                     }
                 />
-
                 <Route
                     path="/admin"
                     element={
