@@ -53,9 +53,7 @@ function InicioPublico() {
                 </h2>
                 
                 <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 max-w-3xl text-center mb-10">
-                    <p className="text-lg text-gray-700 font-medium mb-4">
-                        Gastómetro es la herramienta definitiva para gestionar todos tus gastos recurrentes en plataformas de streaming, software y servicios.
-                    </p>
+                  
                     <p className="text-lg text-gray-700 font-medium">
                         Descubre ofertas exclusivas, unifica tus fechas de pago y evita cobros sorpresa mes a mes.
                     </p>
