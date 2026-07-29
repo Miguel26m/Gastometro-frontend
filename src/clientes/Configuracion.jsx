@@ -1,7 +1,7 @@
 function Configuracion({ usuario }) {
     return (
-        <div className="bg-white p-8 rounded-2xl shadow-md border border-gray-100 max-w-xl">
-            <h2 className="text-2xl font-bold text-[#43a047] mb-6">Ajustes de cuenta</h2>
+        <div className="bg-white p-5 sm:p-8 rounded-2xl shadow-md border border-gray-100 max-w-xl">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#43a047] mb-6">Ajustes de cuenta</h2>
             <form className="flex flex-col gap-5">
                 <div className="flex flex-col gap-1">
                     <label className="text-sm font-semibold text-gray-600">Nombre de usuario</label>

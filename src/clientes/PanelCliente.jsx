@@ -19,6 +19,8 @@ function PanelCliente() {
     const [diaCorte, asignarDiaCorte] = useState('');
     const [error, asignarError] = useState('');
 
+    const [menuMovilAbierto, asignarMenuMovilAbierto] = useState(false);
+
     const navegar = useNavigate();
 
     const preciosBase = {
@@ -68,9 +70,11 @@ function PanelCliente() {
     const obtenerPromociones = async () => {
         try {
             const respuesta = await api.get('/promociones');
-            asignarPromociones(respuesta.data.data);
+            // Algunas respuestas vienen como { data: [...] } y otras como el arreglo directo
+            asignarPromociones(respuesta.data.data ?? respuesta.data ?? []);
         } catch (falla) {
             console.error(falla);
+            asignarPromociones([]);
         }
     };
 
@@ -129,64 +133,99 @@ function PanelCliente() {
         }
     };
 
+    // Cambia de vista y cierra el menú móvil automáticamente
+    const cambiarVista = (vista) => {
+        asignarVistaActual(vista);
+        asignarMenuMovilAbierto(false);
+    };
+
     const totalGasto = misSuscripciones.reduce((suma, sub) => suma + parseFloat(sub.pivot.costo_personalizado), 0);
     const tieneSuscripciones = misSuscripciones.length > 0;
 
-    return (
-        <div className="flex min-h-screen bg-gray-50 font-sans">
+    const elementosNav = [
+        { clave: 'Inicio', etiqueta: 'Inicio' },
+        { clave: 'Suscripciones', etiqueta: 'Suscripciones' },
+        { clave: 'Promociones', etiqueta: 'Promociones' },
+        { clave: 'Configuracion', etiqueta: 'Configuración' },
+    ];
 
-            <aside className="w-64 bg-[#43a047] text-white flex flex-col justify-between shadow-xl z-10">
+    return (
+        <div className="flex h-screen overflow-hidden bg-gray-50 font-sans">
+
+            {menuMovilAbierto && (
+                <div
+                    onClick={() => asignarMenuMovilAbierto(false)}
+                    className="fixed inset-0 bg-black/50 z-20 md:hidden"
+                />
+            )}
+
+            <aside
+                className={`fixed md:static top-0 left-0 h-screen md:h-auto w-64 bg-[#43a047] text-white flex flex-col justify-between shadow-xl z-30 transform transition-transform duration-300 ease-in-out
+                ${menuMovilAbierto ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+            >
                 <div>
-                    <div className="p-6 flex flex-col items-center border-b border-white/20">
+                    <div className="p-6 flex flex-col items-center border-b border-white/20 relative">
+                        {/* Botón de cerrar, solo visible en móvil */}
+                        <button
+                            onClick={() => asignarMenuMovilAbierto(false)}
+                            className="absolute top-4 right-4 text-white/80 hover:text-white md:hidden"
+                            aria-label="Cerrar menú"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                         <div className="w-28 h-28 mb-3 overflow-hidden rounded-full flex items-center justify-center drop-shadow-md">
                             <img src="/logo.png" alt="Logo Gastómetro" className="w-full h-full object-cover scale-150" />
                         </div>
                         <h1 className="text-xl font-bold tracking-wider text-center">GASTOMETRO</h1>
                     </div>
                     <nav className="flex flex-col mt-6 gap-2 px-4">
-                        <button onClick={() => asignarVistaActual('Inicio')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Inicio' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-                            <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Inicio' ? 'bg-white' : 'bg-white/70'}`}></div>
-                            Inicio
-                        </button>
-                        <button onClick={() => asignarVistaActual('Suscripciones')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Suscripciones' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-                            <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Suscripciones' ? 'bg-white' : 'bg-white/70'}`}></div>
-                            Suscripciones
-                        </button>
-                        <button onClick={() => asignarVistaActual('Promociones')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Promociones' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-                            <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Promociones' ? 'bg-white' : 'bg-white/70'}`}></div>
-                            Promociones
-                        </button>
-                        <button onClick={() => asignarVistaActual('Configuracion')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Configuracion' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-                            <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Configuracion' ? 'bg-white' : 'bg-white/70'}`}></div>
-                            Configuración
-                        </button>
+                        {elementosNav.map((item) => (
+                            <button
+                                key={item.clave}
+                                onClick={() => cambiarVista(item.clave)}
+                                className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === item.clave ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                            >
+                                <div className={`w-3 h-3 rounded-sm flex-shrink-0 ${vistaActual === item.clave ? 'bg-white' : 'bg-white/70'}`}></div>
+                                {item.etiqueta}
+                            </button>
+                        ))}
                     </nav>
                 </div>
-                {/* Se eliminó el div del bottom sidebar que contenía el antiguo botón de cerrar sesión */}
             </aside>
 
-            <main className="flex-1 flex flex-col">
-                <header className="h-16 bg-black text-white flex items-center justify-between px-6 shadow-md z-0">
-                    <div className="flex items-center gap-4 w-2/3">
-                        <span className="font-bold text-[#4ade80] tracking-widest hidden md:block w-32 uppercase">{vistaActual}</span>
-                        {/* Se eliminó la barra de búsqueda */}
+            <main className="flex-1 flex flex-col min-w-0">
+                <header className="h-16 bg-black text-white flex items-center justify-between px-4 sm:px-6 shadow-md z-10">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                        {/* Botón hamburguesa, solo visible en móvil */}
+                        <button
+                            onClick={() => asignarMenuMovilAbierto(true)}
+                            className="md:hidden text-white p-1 -ml-1"
+                            aria-label="Abrir menú"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <span className="font-bold text-[#4ade80] tracking-widest uppercase truncate">{vistaActual}</span>
                     </div>
-                    
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2">
+
+                    <div className="flex items-center gap-3 sm:gap-6">
+                        <div className="hidden sm:flex items-center gap-2">
                             <svg className="w-5 h-5 text-[#4ade80]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-                            <span className="font-semibold text-white text-sm">{usuario.name || 'Cargando...'}</span>
+                            <span className="font-semibold text-white text-sm truncate max-w-[10rem]">{usuario.name || 'Cargando...'}</span>
                         </div>
                         <button
                             onClick={cerrarSesion}
-                            className="bg-[#3EA341] hover:bg-green-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                            className="bg-[#3EA341] hover:bg-green-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm whitespace-nowrap"
                         >
                             Cerrar sesión
                         </button>
                     </div>
                 </header>
 
-                <div className="p-8 md:p-12 overflow-y-auto flex-1">
+                <div className="p-4 sm:p-6 md:p-12 overflow-y-auto flex-1 min-h-0">
 
                     {vistaActual === 'Inicio' && (
                         <Inicio
@@ -220,7 +259,7 @@ function PanelCliente() {
 
             {mostrarModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl animate-fade-in-up flex flex-col gap-4">
+                    <div className="bg-white p-6 sm:p-8 rounded-2xl w-full max-w-sm shadow-2xl animate-fade-in-up flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
                         <h2 className="text-2xl font-bold text-center text-gray-800 border-b pb-3">Registrar gasto</h2>
 
                         {error && <p className="text-red-500 text-sm font-semibold text-center bg-red-50 p-2 rounded">{error}</p>}
