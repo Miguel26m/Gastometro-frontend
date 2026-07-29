@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../servicios/api';
 import Dashboard from './Dashboard';
 import CatalogoPlataformas from './CatalogoPlataformas';
@@ -28,6 +29,9 @@ function PanelAdmin() {
     const [rolIdUsuario, asignarRolIdUsuario] = useState('2');
     const [errorUsuario, asignarErrorUsuario] = useState('');
     const [telefonoUsuario, asignarTelefonoUsuario] = useState('');
+    
+   
+    const [menuMovilAbierto, asignarMenuMovilAbierto] = useState(false);
 
     const navegar = useNavigate();
 
@@ -118,10 +122,12 @@ function PanelAdmin() {
                 await api.post(`/plataformas/${plataformaEnEdicion}`, datosFormulario, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
+                Swal.fire('¡Actualizado!', 'La plataforma se actualizó correctamente.', 'success');
             } else {
                 await api.post('/plataformas', datosFormulario, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
+                Swal.fire('¡Guardado!', 'La plataforma se registró correctamente.', 'success');
             }
 
             asignarNombrePlataforma('');
@@ -146,11 +152,26 @@ function PanelAdmin() {
     };
 
     const eliminarPlataforma = async (id) => {
-        try {
-            await api.delete(`/plataformas/${id}`);
-            obtenerPlataformas();
-        } catch (falla) {
-            console.error(falla);
+        const confirmacion = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¡Se eliminará esta plataforma del catálogo de forma permanente!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (confirmacion.isConfirmed) {
+            try {
+                await api.delete(`/plataformas/${id}`);
+                obtenerPlataformas();
+                Swal.fire('¡Eliminada!', 'La plataforma ha sido eliminada exitosamente.', 'success');
+            } catch (falla) {
+                console.error(falla);
+                Swal.fire('Error', 'Hubo un problema al eliminar la plataforma.', 'error');
+            }
         }
     };
 
@@ -195,8 +216,10 @@ function PanelAdmin() {
 
             if (usuarioEnEdicion) {
                 await api.put(`/usuarios/${usuarioEnEdicion}`, datosUsuario);
+                Swal.fire('¡Actualizado!', 'El usuario se actualizó correctamente.', 'success');
             } else {
                 await api.post('/usuarios', datosUsuario);
+                Swal.fire('¡Registrado!', 'El nuevo usuario se agregó correctamente.', 'success');
             }
 
             asignarMostrarModalUsuario(false);
@@ -208,13 +231,25 @@ function PanelAdmin() {
     };
 
     const eliminarUsuario = async (id) => {
-        const confirmar = window.confirm('¿Estás seguro de eliminar este usuario del sistema?');
-        if (confirmar) {
+        const confirmacion = await Swal.fire({
+            title: '¿Eliminar usuario?',
+            text: "¡No podrás revertir esto y el usuario perderá acceso al sistema!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (confirmacion.isConfirmed) {
             try {
                 await api.delete(`/usuarios/${id}`);
                 obtenerUsuarios();
+                Swal.fire('¡Eliminado!', 'El usuario ha sido eliminado de la base de datos.', 'success');
             } catch (falla) {
                 console.error(falla);
+                Swal.fire('Error', 'No se pudo eliminar al usuario. Intenta más tarde.', 'error');
             }
         }
     };
@@ -231,11 +266,39 @@ function PanelAdmin() {
         }
     };
 
+    const cambiarVista = (vista) => {
+        asignarVistaActual(vista);
+        asignarMenuMovilAbierto(false); 
+    };
+
     return (
-        <div className="flex min-h-screen bg-gray-50 font-sans">
-            <aside className="w-64 bg-[#43a047] text-white flex flex-col justify-between shadow-xl z-10">
+        <div className="flex h-screen overflow-hidden bg-gray-50 font-sans">
+            
+            {/* Fondo oscuro al abrir el menú en móviles */}
+            {menuMovilAbierto && (
+                <div
+                    onClick={() => asignarMenuMovilAbierto(false)}
+                    className="fixed inset-0 bg-black/50 z-20 md:hidden"
+                />
+            )}
+
+            {/* Sidebar Responsivo */}
+            <aside
+                className={`fixed md:static top-0 left-0 h-screen md:h-auto w-64 bg-[#43a047] text-white flex flex-col justify-between shadow-xl z-30 transform transition-transform duration-300 ease-in-out
+                ${menuMovilAbierto ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+            >
                 <div>
-                    <div className="p-6 flex flex-col items-center border-b border-white/20">
+                    <div className="p-6 flex flex-col items-center border-b border-white/20 relative">
+                        {/* Botón para cerrar menú móvil */}
+                        <button
+                            onClick={() => asignarMenuMovilAbierto(false)}
+                            className="absolute top-4 right-4 text-white/80 hover:text-white md:hidden"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
                         <div className="w-28 h-28 mb-3 overflow-hidden rounded-full flex items-center justify-center drop-shadow-md">
                             <img src="/logo.png" alt="Logo Gastómetro" className="w-full h-full object-cover scale-150" />
                         </div>
@@ -243,15 +306,15 @@ function PanelAdmin() {
                         <span className="text-xs bg-white text-[#43a047] px-2 py-0.5 rounded mt-1 font-bold">ADMIN</span>
                     </div>
                     <nav className="flex flex-col mt-6 gap-2 px-4">
-                        <button onClick={() => asignarVistaActual('Métricas')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Métricas' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
+                        <button onClick={() => cambiarVista('Métricas')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Métricas' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
                             <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Métricas' ? 'bg-white' : 'bg-white/70'}`}></div>
                             Dashboard
                         </button>
-                        <button onClick={() => asignarVistaActual('Plataformas')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Plataformas' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
+                        <button onClick={() => cambiarVista('Plataformas')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Plataformas' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
                             <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Plataformas' ? 'bg-white' : 'bg-white/70'}`}></div>
                             Catálogo plataformas
                         </button>
-                        <button onClick={() => asignarVistaActual('Usuarios')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Usuarios' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
+                        <button onClick={() => cambiarVista('Usuarios')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Usuarios' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
                             <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Usuarios' ? 'bg-white' : 'bg-white/70'}`}></div>
                             Gestión usuarios
                         </button>
@@ -259,27 +322,37 @@ function PanelAdmin() {
                 </div>
             </aside>
 
-            <main className="flex-1 flex flex-col">
-                <header className="h-16 bg-black text-white flex items-center justify-between px-6 shadow-md z-0">
-                    <div className="flex items-center gap-4">
-                        <span className="font-bold text-[#4ade80] tracking-widest uppercase">{vistaActual}</span>
+            {/* Contenido Principal */}
+            <main className="flex-1 flex flex-col min-w-0">
+                <header className="h-16 bg-black text-white flex items-center justify-between px-4 sm:px-6 shadow-md z-10">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                        {/* Botón de hamburguesa para móviles */}
+                        <button
+                            onClick={() => asignarMenuMovilAbierto(true)}
+                            className="md:hidden text-white p-1 -ml-1"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <span className="font-bold text-[#4ade80] tracking-widest uppercase truncate">{vistaActual}</span>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 sm:gap-6">
+                        <div className="hidden sm:flex items-center gap-2">
                             <svg className="w-5 h-5 text-[#4ade80]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-                            <span className="font-semibold text-white text-sm">{miPerfil.name || 'Admin'}</span>
+                            <span className="font-semibold text-white text-sm truncate max-w-[10rem]">{miPerfil.name || 'Admin'}</span>
                         </div>
                         <button
                             onClick={cerrarSesion}
-                            className="bg-[#3EA341] hover:bg-green-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                            className="bg-[#3EA341] hover:bg-green-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm whitespace-nowrap"
                         >
                             Cerrar sesión
                         </button>
                     </div>
                 </header>
 
-                <div className="p-8 md:p-12 overflow-y-auto flex-1">
+                <div className="p-4 sm:p-6 md:p-12 overflow-y-auto flex-1 min-h-0">
                     {vistaActual === 'Métricas' && (
                         <Dashboard plataformas={plataformas} usuarios={usuarios} />
                     )}
@@ -304,10 +377,10 @@ function PanelAdmin() {
                 </div>
             </main>
 
-            {/* Modal Plataforma */}
+            
             {mostrarModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col gap-4 animate-fade-in-up">
+                    <div className="bg-white p-6 sm:p-8 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
                         <h2 className="text-xl font-bold text-center text-[#43a047] border-b pb-3 uppercase tracking-wide">
                             {plataformaEnEdicion ? 'Editar Plataforma' : 'Registrar Plataforma'}
                         </h2>
@@ -385,7 +458,7 @@ function PanelAdmin() {
             {/* Modal Usuario */}
             {mostrarModalUsuario && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col gap-4 animate-fade-in-up">
+                    <div className="bg-white p-6 sm:p-8 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
                         <h2 className="text-xl font-bold text-center text-[#43a047] border-b pb-3 uppercase tracking-wide">
                             {usuarioEnEdicion ? 'Editar Usuario' : 'Registrar Usuario'}
                         </h2>
