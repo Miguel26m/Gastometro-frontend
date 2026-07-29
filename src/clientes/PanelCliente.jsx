@@ -19,6 +19,7 @@ function PanelCliente() {
     const [diaCorte, asignarDiaCorte] = useState('');
     const [error, asignarError] = useState('');
 
+    // Nuevo: control del menú lateral en móvil (tipo "hamburguesa")
     const [menuMovilAbierto, asignarMenuMovilAbierto] = useState(false);
 
     const navegar = useNavigate();
@@ -165,7 +166,6 @@ function PanelCliente() {
             >
                 <div>
                     <div className="p-6 flex flex-col items-center border-b border-white/20 relative">
-                        {/* Botón de cerrar, solo visible en móvil */}
                         <button
                             onClick={() => asignarMenuMovilAbierto(false)}
                             className="absolute top-4 right-4 text-white/80 hover:text-white md:hidden"
@@ -198,7 +198,6 @@ function PanelCliente() {
             <main className="flex-1 flex flex-col min-w-0">
                 <header className="h-16 bg-black text-white flex items-center justify-between px-4 sm:px-6 shadow-md z-10">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                        {/* Botón hamburguesa, solo visible en móvil */}
                         <button
                             onClick={() => asignarMenuMovilAbierto(true)}
                             className="md:hidden text-white p-1 -ml-1"
@@ -251,7 +250,7 @@ function PanelCliente() {
                     )}
 
                     {vistaActual === 'Configuracion' && (
-                        <Configuracion usuario={usuario} />
+                        <Configuracion usuario={usuario} asignarUsuario={asignarUsuario} />
                     )}
 
                 </div>
