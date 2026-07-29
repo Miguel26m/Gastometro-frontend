@@ -4,7 +4,6 @@ import api from '../servicios/api';
 import Dashboard from './Dashboard';
 import CatalogoPlataformas from './CatalogoPlataformas';
 import GestionUsuarios from './GestionUsuarios';
-import MiPerfil from './MiPerfil';
 
 function PanelAdmin() {
     const [vistaActual, asignarVistaActual] = useState('Métricas');
@@ -256,10 +255,6 @@ function PanelAdmin() {
                             <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Usuarios' ? 'bg-white' : 'bg-white/70'}`}></div>
                             Gestión usuarios
                         </button>
-                        <button onClick={() => asignarVistaActual('Configuracion')} className={`flex items-center gap-3 w-full p-3 rounded-lg font-semibold transition-colors ${vistaActual === 'Configuracion' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-                            <div className={`w-3 h-3 rounded-sm ${vistaActual === 'Configuracion' ? 'bg-white' : 'bg-white/70'}`}></div>
-                            Mi perfil
-                        </button>
                     </nav>
                 </div>
             </aside>
@@ -306,13 +301,10 @@ function PanelAdmin() {
                             abrirModalEditarUsuario={abrirModalEditarUsuario}
                         />
                     )}
-
-                    {vistaActual === 'Configuracion' && (
-                        <MiPerfil miPerfil={miPerfil} />
-                    )}
                 </div>
             </main>
 
+            {/* Modal Plataforma */}
             {mostrarModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
                     <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col gap-4 animate-fade-in-up">
@@ -390,6 +382,7 @@ function PanelAdmin() {
                 </div>
             )}
 
+            {/* Modal Usuario */}
             {mostrarModalUsuario && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
                     <div className="bg-white p-8 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col gap-4 animate-fade-in-up">
