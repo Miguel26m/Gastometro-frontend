@@ -54,9 +54,7 @@ function InicioPublico() {
                 
                 <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 max-w-3xl text-center mb-10">
                   
-                    <p className="text-lg text-gray-700 font-medium">
-                        Descubre ofertas exclusivas, unifica tus fechas de pago y evita cobros sorpresa mes a mes.
-                    </p>
+                  
                 </div>
 
                 <div className="w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100 flex flex-col items-center gap-6">
