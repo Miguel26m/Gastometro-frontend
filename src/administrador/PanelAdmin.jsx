@@ -15,6 +15,7 @@ function PanelAdmin() {
     const [mostrarModal, asignarMostrarModal] = useState(false);
     const [nombrePlataforma, asignarNombrePlataforma] = useState('');
     const [categoriaPlataforma, asignarCategoriaPlataforma] = useState('');
+    const [precioBasePlataforma, asignarPrecioBasePlataforma] = useState('');
     const [archivoLogo, asignarArchivoLogo] = useState(null);
     const [previsualizacionLogo, asignarPrevisualizacionLogo] = useState(null);
     const [error, asignarError] = useState('');
@@ -81,6 +82,7 @@ function PanelAdmin() {
         asignarPlataformaEnEdicion(null);
         asignarNombrePlataforma('');
         asignarCategoriaPlataforma('');
+        asignarPrecioBasePlataforma('');
         asignarArchivoLogo(null);
         asignarPrevisualizacionLogo(null);
         asignarError('');
@@ -91,6 +93,7 @@ function PanelAdmin() {
         asignarPlataformaEnEdicion(plat.id);
         asignarNombrePlataforma(plat.nombre);
         asignarCategoriaPlataforma(plat.categoria || '');
+        asignarPrecioBasePlataforma(plat.precio_base || '');
         asignarArchivoLogo(null);
         asignarPrevisualizacionLogo(plat.logo_url || null); 
         asignarError('');
@@ -105,6 +108,7 @@ function PanelAdmin() {
             const datosFormulario = new FormData();
             datosFormulario.append('nombre', nombrePlataforma);
             datosFormulario.append('categoria', categoriaPlataforma);
+            datosFormulario.append('precio_base', precioBasePlataforma);
             
             if (archivoLogo) {
                 datosFormulario.append('logo', archivoLogo);
@@ -123,6 +127,7 @@ function PanelAdmin() {
 
             asignarNombrePlataforma('');
             asignarCategoriaPlataforma('');
+            asignarPrecioBasePlataforma('');
             asignarArchivoLogo(null);
             asignarPrevisualizacionLogo(null);
             asignarPlataformaEnEdicion(null);
@@ -180,12 +185,13 @@ function PanelAdmin() {
             const datosUsuario = {
                 name: nombreUsuario,
                 email: correoUsuario,
-                rol_id: rolIdUsuario,
+                rol_id: parseInt(rolIdUsuario), 
                 telefono: telefonoUsuario
             };
 
             if (passwordUsuario) {
                 datosUsuario.password = passwordUsuario;
+                datosUsuario.password_confirmation = passwordUsuario; 
             }
 
             if (usuarioEnEdicion) {
@@ -197,7 +203,8 @@ function PanelAdmin() {
             asignarMostrarModalUsuario(false);
             obtenerUsuarios();
         } catch (falla) {
-            asignarErrorUsuario(usuarioEnEdicion ? 'Error al actualizar el usuario' : 'Error al guardar el usuario');
+            const mensajeError = falla.response?.data?.message || (usuarioEnEdicion ? 'Error al actualizar el usuario' : 'Error al guardar el usuario');
+            asignarErrorUsuario(mensajeError);
         }
     };
 
@@ -335,6 +342,19 @@ function PanelAdmin() {
                                     placeholder="Ej. Streaming, Trabajo"
                                     value={categoriaPlataforma}
                                     onChange={(e) => asignarCategoriaPlataforma(e.target.value)}
+                                    required
+                                    className="p-2.5 border border-gray-300 rounded-lg focus:border-[#4ade80] focus:ring-1 focus:ring-[#4ade80] outline-none font-medium"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Precio Base Mensual ($)</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="Ej. 149.00"
+                                    value={precioBasePlataforma}
+                                    onChange={(e) => asignarPrecioBasePlataforma(e.target.value)}
                                     required
                                     className="p-2.5 border border-gray-300 rounded-lg focus:border-[#4ade80] focus:ring-1 focus:ring-[#4ade80] outline-none font-medium"
                                 />

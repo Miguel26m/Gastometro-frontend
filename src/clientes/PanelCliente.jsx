@@ -19,20 +19,9 @@ function PanelCliente() {
     const [diaCorte, asignarDiaCorte] = useState('');
     const [error, asignarError] = useState('');
 
-    // Nuevo: control del menú lateral en móvil (tipo "hamburguesa")
     const [menuMovilAbierto, asignarMenuMovilAbierto] = useState(false);
 
     const navegar = useNavigate();
-
-    const preciosBase = {
-        'Netflix': 219.00,
-        'Spotify': 129.00,
-        'Amazon Prime': 99.00,
-        'Disney+': 179.00,
-        'Max': 149.00,
-        'YouTube Premium': 139.00,
-        'Crunchyroll': 119.00
-    };
 
     useEffect(() => {
         obtenerDatosUsuario();
@@ -71,7 +60,6 @@ function PanelCliente() {
     const obtenerPromociones = async () => {
         try {
             const respuesta = await api.get('/promociones');
-            // Algunas respuestas vienen como { data: [...] } y otras como el arreglo directo
             asignarPromociones(respuesta.data.data ?? respuesta.data ?? []);
         } catch (falla) {
             console.error(falla);
@@ -79,19 +67,20 @@ function PanelCliente() {
         }
     };
 
-    const manejarSeleccionPlataforma = (evento) => {
-        const idPlataforma = evento.target.value;
-        asignarPlataformaSeleccionada(idPlataforma);
+  const manejarSeleccionPlataforma = (evento) => {
+    const idPlataforma = evento.target.value;
+    asignarPlataformaSeleccionada(idPlataforma);
 
-        const plataformaEncontrada = plataformas.find(p => p.id.toString() === idPlataforma);
+    const plataformaEncontrada = plataformas.find(p => p.id.toString() === idPlataforma);
 
-        if (plataformaEncontrada && preciosBase[plataformaEncontrada.nombre]) {
-            asignarCosto(preciosBase[plataformaEncontrada.nombre]);
-        } else {
-            asignarCosto('');
-        }
-    };
-
+    if (plataformaEncontrada) {
+       
+        const precioSugerido = plataformaEncontrada.precio_base ?? '';
+        asignarCosto(precioSugerido);
+    } else {
+        asignarCosto('');
+    }
+};
     const agregarSuscripcion = async (evento) => {
         evento.preventDefault();
         asignarError('');
@@ -134,7 +123,6 @@ function PanelCliente() {
         }
     };
 
-    // Cambia de vista y cierra el menú móvil automáticamente
     const cambiarVista = (vista) => {
         asignarVistaActual(vista);
         asignarMenuMovilAbierto(false);
