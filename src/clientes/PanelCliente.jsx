@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../servicios/api';
 import Inicio from './Inicio';
 import Suscripciones from './Suscripciones';
@@ -19,9 +20,20 @@ function PanelCliente() {
     const [diaCorte, asignarDiaCorte] = useState('');
     const [error, asignarError] = useState('');
 
+    // Nuevo: control del menú lateral en móvil (tipo "hamburguesa")
     const [menuMovilAbierto, asignarMenuMovilAbierto] = useState(false);
 
     const navegar = useNavigate();
+
+    const preciosBase = {
+        'Netflix': 219.00,
+        'Spotify': 129.00,
+        'Amazon Prime': 99.00,
+        'Disney+': 179.00,
+        'Max': 149.00,
+        'YouTube Premium': 139.00,
+        'Crunchyroll': 119.00
+    };
 
     useEffect(() => {
         obtenerDatosUsuario();
@@ -60,6 +72,7 @@ function PanelCliente() {
     const obtenerPromociones = async () => {
         try {
             const respuesta = await api.get('/promociones');
+            // Algunas respuestas vienen como { data: [...] } y otras como el arreglo directo
             asignarPromociones(respuesta.data.data ?? respuesta.data ?? []);
         } catch (falla) {
             console.error(falla);
@@ -67,20 +80,19 @@ function PanelCliente() {
         }
     };
 
-  const manejarSeleccionPlataforma = (evento) => {
-    const idPlataforma = evento.target.value;
-    asignarPlataformaSeleccionada(idPlataforma);
+    const manejarSeleccionPlataforma = (evento) => {
+        const idPlataforma = evento.target.value;
+        asignarPlataformaSeleccionada(idPlataforma);
 
-    const plataformaEncontrada = plataformas.find(p => p.id.toString() === idPlataforma);
+        const plataformaEncontrada = plataformas.find(p => p.id.toString() === idPlataforma);
 
-    if (plataformaEncontrada) {
-       
-        const precioSugerido = plataformaEncontrada.precio_base ?? '';
-        asignarCosto(precioSugerido);
-    } else {
-        asignarCosto('');
-    }
-};
+        if (plataformaEncontrada && preciosBase[plataformaEncontrada.nombre]) {
+            asignarCosto(preciosBase[plataformaEncontrada.nombre]);
+        } else {
+            asignarCosto('');
+        }
+    };
+
     const agregarSuscripcion = async (evento) => {
         evento.preventDefault();
         asignarError('');
@@ -103,12 +115,40 @@ function PanelCliente() {
         }
     };
 
-    const eliminarSuscripcion = async (id) => {
+    const eliminarSuscripcion = async (id, nombre) => {
+        const resultado = await Swal.fire({
+            title: '¿Cancelar suscripción?',
+            text: nombre ? `Vas a cancelar tu suscripción a ${nombre}. Esta acción no se puede deshacer.` : 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3EA341',
+            cancelButtonColor: '#9ca3af',
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'Volver',
+            reverseButtons: true,
+        });
+
+        if (!resultado.isConfirmed) return;
+
         try {
             await api.delete(`/mis-suscripciones/${id}`);
             obtenerMisSuscripciones();
+            Swal.fire({
+                title: 'Cancelada',
+                text: 'Tu suscripción se canceló correctamente.',
+                icon: 'success',
+                confirmButtonColor: '#3EA341',
+                timer: 2000,
+                timerProgressBar: true,
+            });
         } catch (falla) {
             console.error(falla);
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudo cancelar la suscripción. Intenta de nuevo.',
+                icon: 'error',
+                confirmButtonColor: '#3EA341',
+            });
         }
     };
 
@@ -186,6 +226,7 @@ function PanelCliente() {
             <main className="flex-1 flex flex-col min-w-0">
                 <header className="h-16 bg-black text-white flex items-center justify-between px-4 sm:px-6 shadow-md z-10">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                        {/* Botón hamburguesa, solo visible en móvil */}
                         <button
                             onClick={() => asignarMenuMovilAbierto(true)}
                             className="md:hidden text-white p-1 -ml-1"

@@ -8,6 +8,7 @@ function Suscripciones({ misSuscripciones, totalGasto, asignarMostrarModal, elim
 
     const totalPaginas = Math.max(1, Math.ceil(listaSuscripciones.length / tamanoPagina));
 
+    // Si la lista cambia (o se reduce el tamaño de página) y la página actual ya no existe, regresa a la última válida
     useEffect(() => {
         if (paginaActual > totalPaginas) {
             asignarPaginaActual(totalPaginas);
@@ -89,7 +90,7 @@ function Suscripciones({ misSuscripciones, totalGasto, asignarMostrarModal, elim
                                     <td className="p-4 font-medium text-gray-800">${sub.pivot.costo_personalizado}</td>
                                     <td className="p-4 text-gray-900">Día {sub.pivot.dia_corte}</td>
                                     <td className="p-4 text-center">
-                                        <button onClick={() => eliminarSuscripcion(sub.id)} className="bg-[#3EA341] text-white px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-green-500 transition-colors">Cancelar</button>
+                                        <button onClick={() => eliminarSuscripcion(sub.id, sub.nombre)} className="bg-[#3EA341] text-white px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-green-500 transition-colors">Cancelar</button>
                                     </td>
                                 </tr>
                             ))
@@ -98,6 +99,7 @@ function Suscripciones({ misSuscripciones, totalGasto, asignarMostrarModal, elim
                 </table>
             </div>
 
+            {/* Tarjetas: solo en móvil */}
             <div className="sm:hidden flex flex-col gap-3">
                 {suscripcionesPagina.length === 0 ? (
                     <p className="text-center p-8 text-gray-500">
@@ -123,7 +125,7 @@ function Suscripciones({ misSuscripciones, totalGasto, asignarMostrarModal, elim
                                 <span className="text-gray-700">Costo: <strong className="text-gray-900">${sub.pivot.costo_personalizado}</strong></span>
                                 <span className="text-gray-700">Día {sub.pivot.dia_corte}</span>
                             </div>
-                            <button onClick={() => eliminarSuscripcion(sub.id)} className="bg-[#3EA341] text-white py-2 rounded-md text-sm font-semibold hover:bg-green-500 transition-colors">Cancelar</button>
+                            <button onClick={() => eliminarSuscripcion(sub.id, sub.nombre)} className="bg-[#3EA341] text-white py-2 rounded-md text-sm font-semibold hover:bg-green-500 transition-colors">Cancelar</button>
                         </div>
                     ))
                 )}
