@@ -38,6 +38,18 @@ GASTOMETRO
 No sientes que aveces te falta dinero, que creias tener mas pero en un dos por tres tu dinero se fue completamente, que quizas tienes demasiadas suscripciones, no te preocupes, a tu vida a llegado GASTOMETRO, una aplicacion que busca lidiar con la fuga silenciosa de capital y desorganizacion financiera provocada por el exceso de acumulacion de suscripciones a plataformad digitaes, muchas veces tu como usuario olvidas la fecha de corte o no te acuerda de cancelarlo lo que provoca en ti una perdida de dinero para un servicio que probablemente no usas lo que dificulta tus oportunidades de ahorro, gastometro a llegado para ayudarte a ti amigo paradigmatico con esos problemas que puede llevar a acarrear tener demasiadas suscripciones a la vez, ademas gastometro incluye un modulo especificamente para promociones los cuales te permiten avizar o advertir que promociones hay en suscripciones que permitan alivianar tus deudas, gastometro llego.
 
 ---
+## CREDENCIALES
+ADMIN
+CORREO: superadmin@gastometro.com
+CONTRASEÑA: Admin12345.
+
+CLIENTE
+CORREO: gastometrotm13@gmail.com
+CONTRASEÑA: Gastometro3.
+
+CAZAOFERTAS
+CORREO: 	rata@gmail.com
+CONTRASEÑA:  Admin12345.
 
 ## Instalación
 
